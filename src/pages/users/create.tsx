@@ -9,11 +9,43 @@ import {
   VStack,
 } from '@chakra-ui/react'
 import type { NextPage } from 'next'
+import Link from 'next/link'
 import { Input } from '../../components/Form/input'
 import { Header } from '../../components/Header'
 import { Sidebar } from '../../components/Sidebar'
+import * as z from 'zod'
+import { zodResolver } from '@hookform/resolvers/zod'
+import { useForm } from 'react-hook-form'
+
+const CreateUsersFormSchema = z
+  .object({
+    name: z.string().min(1, 'Nome obrigatório'),
+    email: z.string().email({ message: 'E-mail obrigatório' }),
+    password: z.string().min(6, 'No mínimo 6 caracteres'),
+    confirm_password: z.string().min(6, 'No mínimo 6 caracteres'),
+  })
+  .refine(async (data) => data.password === data.confirm_password, {
+    message: 'Senhas não coincidem',
+    path: ['confirm_password'],
+  })
+
+type CreateUsersProps = z.infer<typeof CreateUsersFormSchema>
 
 const CreateUsers: NextPage = () => {
+  const {
+    handleSubmit,
+    register,
+    formState: { errors, isSubmitting },
+  } = useForm<CreateUsersProps>({
+    resolver: zodResolver(CreateUsersFormSchema),
+  })
+
+  async function handleCreateUser(data: CreateUsersProps) {
+    await new Promise((resolve) => setTimeout(resolve, 2000))
+
+    console.log(data)
+  }
+
   return (
     <Box>
       <Header />
@@ -21,7 +53,14 @@ const CreateUsers: NextPage = () => {
       <Flex w="100%" my="6" maxW={1480} mx="auto" px="6">
         <Sidebar />
 
-        <Box flex="1" borderRadius={8} bg="gray.800" p="8">
+        <Box
+          as="form"
+          flex="1"
+          borderRadius={8}
+          bg="gray.800"
+          p={['6', '8']}
+          onSubmit={handleSubmit(handleCreateUser)}
+        >
           <Heading size="lg" fontWeight="normal">
             Criar usuário
           </Heading>
@@ -29,25 +68,47 @@ const CreateUsers: NextPage = () => {
           <Divider my="6" borderColor="gray.700" />
 
           <VStack spacing="8">
-            <SimpleGrid minChildWidth={248} spacing="8" w="full">
-              <Input type="text" name="name" label="Nome completo" />
-              <Input type="email" name="email" label="E-mail" />
+            <SimpleGrid minChildWidth={248} spacing={['6', '8']} w="full">
+              <Input
+                type="text"
+                label="Nome completo"
+                error={errors.name}
+                {...register('name')}
+              />
+              <Input
+                type="email"
+                label="E-mail"
+                error={errors.email}
+                {...register('email')}
+              />
             </SimpleGrid>
 
-            <SimpleGrid minChildWidth={248} spacing="8" w="full">
-              <Input type="password" name="password" label="Senha" />
+            <SimpleGrid minChildWidth={248} spacing={['6', '8']} w="full">
               <Input
                 type="password"
-                name="confirm_password"
+                label="Senha"
+                error={errors.password}
+                {...register('password')}
+              />
+              <Input
+                type="password"
                 label="Confirmar senha"
+                error={errors.confirm_password}
+                {...register('confirm_password')}
               />
             </SimpleGrid>
           </VStack>
 
           <Flex mt="8" justify="flex-end">
             <HStack spacing="4">
-              <Button colorScheme="whiteAlpha">Cancelar</Button>
-              <Button>Salvar</Button>
+              <Link href="/users" passHref>
+                <Button as="a" colorScheme="whiteAlpha">
+                  Cancelar
+                </Button>
+              </Link>
+              <Button type="submit" isLoading={isSubmitting}>
+                Salvar
+              </Button>
             </HStack>
           </Flex>
         </Box>
