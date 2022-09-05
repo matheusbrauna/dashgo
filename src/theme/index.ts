@@ -32,6 +32,7 @@ export const customTheme: Partial<ThemeOverride> = {
     body: 'Roboto',
   },
   config: {
+    initialColorMode: 'light',
     useSystemColorMode: false,
   },
 }

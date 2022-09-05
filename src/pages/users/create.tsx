@@ -16,6 +16,10 @@ import { Sidebar } from '../../components/Sidebar'
 import * as z from 'zod'
 import { zodResolver } from '@hookform/resolvers/zod'
 import { useForm } from 'react-hook-form'
+import { useMutation } from 'react-query'
+import { api } from '../../services/api'
+import { queryClient } from '../../services/queryClient'
+import { useRouter } from 'next/router'
 
 const CreateUsersFormSchema = z
   .object({
@@ -31,19 +35,41 @@ const CreateUsersFormSchema = z
 
 type CreateUsersProps = z.infer<typeof CreateUsersFormSchema>
 
-const CreateUsers: NextPage = () => {
+const CreateUser: NextPage = () => {
+  const router = useRouter()
+
+  const createUser = useMutation(
+    async (user: CreateUsersProps) => {
+      const response = await api.post('users', {
+        user: {
+          ...user,
+          created_at: new Date(),
+        },
+      })
+
+      return response.data.user
+    },
+    {
+      onSuccess: () => {
+        queryClient.invalidateQueries('users')
+      },
+    }
+  )
+
   const {
     handleSubmit,
     register,
+    reset,
     formState: { errors, isSubmitting },
   } = useForm<CreateUsersProps>({
     resolver: zodResolver(CreateUsersFormSchema),
   })
 
   async function handleCreateUser(data: CreateUsersProps) {
-    await new Promise((resolve) => setTimeout(resolve, 2000))
+    await createUser.mutateAsync(data)
 
-    console.log(data)
+    reset()
+    router.push('/users')
   }
 
   return (
@@ -117,4 +143,4 @@ const CreateUsers: NextPage = () => {
   )
 }
 
-export default CreateUsers
+export default CreateUser
