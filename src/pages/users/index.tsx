@@ -5,11 +5,9 @@ import {
   Flex,
   Heading,
   Icon,
-  Link,
   Spinner,
   Table,
   Tbody,
-  Td,
   Text,
   Th,
   Thead,
@@ -19,13 +17,14 @@ import {
 import type { NextPage } from 'next'
 import NextLink from 'next/link'
 import { useState } from 'react'
-import { RiAddLine, RiPencilLine } from 'react-icons/ri'
+import { RiAddLine } from 'react-icons/ri'
 import { Header } from '../../components/Header'
 import { Pagination } from '../../components/Pagination'
 import { Sidebar } from '../../components/Sidebar'
 import { useUsers } from '../../services/hooks/useUsers'
 import { queryClient } from '../../services/queryClient'
 import { api } from '../../services/api'
+import { TableRow } from '../../components/TableRow'
 
 const UsersList: NextPage = () => {
   const [currentPage, setCurrentPage] = useState(1)
@@ -117,44 +116,11 @@ const UsersList: NextPage = () => {
 
                 <Tbody>
                   {data?.users.map((user) => (
-                    <Tr key={user.id}>
-                      <Td px={['4', '4', '6']}>
-                        <Checkbox colorScheme="pink" />
-                      </Td>
-                      <Td>
-                        <Box>
-                          <Link
-                            color="purple.400"
-                            onMouseEnter={() => handlePrefetchUser(user.id)}
-                          >
-                            <Text fontWeight="bold" fontSize={['sm', 'md']}>
-                              {user.name}
-                            </Text>
-                          </Link>
-                          <Text fontSize={['xs', 'sm']} color="gray.300">
-                            {user.email}
-                          </Text>
-                        </Box>
-                      </Td>
-                      {isWideVersion && <Td>{user.created_at}</Td>}
-                      {isWideVersion && (
-                        <Td>
-                          <Button
-                            as="a"
-                            size="sm"
-                            fontSize="sm"
-                            colorScheme="purple"
-                            leftIcon={<Icon as={RiPencilLine} fontSize="16" />}
-                            cursor="pointer"
-                            display="flex"
-                            alignItems="center"
-                            justifyContent="center"
-                          >
-                            Editar
-                          </Button>
-                        </Td>
-                      )}
-                    </Tr>
+                    <TableRow
+                      userData={user}
+                      key={user.id}
+                      onPrefetchUser={handlePrefetchUser}
+                    />
                   ))}
                 </Tbody>
               </Table>
